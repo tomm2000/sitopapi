@@ -1,12 +1,9 @@
 <script lang="ts">
   import Ref from "$lib/components/Ref.svelte";
-
-
-
 </script>
 
 <div class="layout">
-  <Ref page="" title="home"></Ref>
+  <Ref page="." title="home"></Ref>
   <slot></slot>
 </div>
 

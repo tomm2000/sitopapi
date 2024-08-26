@@ -20,6 +20,24 @@ export type Log = {
   message: string;
 };
 
+export const columnPositions = {
+  codiceFiscaleProprietario: 0,
+  tipoProprietario: 1,
+  codiceFiscaleAssistito: 2,
+  dataDocumento: 3,
+  numeroDocumento: 4,
+  suffissoNumeroDocumento: 5,
+  dispositivo: 6,
+  dataPagamento: 7,
+  tipoOperazione: 8,
+  voceSpesa: 9,
+  importo: 10,
+  pagamentoTracciato: 11,
+  tipoDocumento: 12,
+  esercizioOpposizione: 13,
+  codiceNaturaIva: 14,
+};
+
 // check rows takes in data and a (row) => rowError function
 export function CheckRows(data: CSVmanager, checkRow: (data: CSVmanager, row: number) => RowError): RowError[] {
   var errors = [];
@@ -81,7 +99,7 @@ export function LogErrors(errors: RowError[]): Log[] {
 }
 
 export function CheckColumnAmount(data: CSVmanager, row: number): RowError {
-  if (data.getNColumns() !== 14) {
+  if (data.getNColumns() !== 15) {
     return { hasError: true, error: `Numero invalido di colonne: ${data.getNColumns()}` };
   }
   return { hasError: false };
@@ -90,9 +108,13 @@ export function CheckColumnAmount(data: CSVmanager, row: number): RowError {
 export function CheckFiscaleCode(data: CSVmanager, row: number, column: number): RowError {
   var code = data.getCell(row, column);
 
+  code = code.trim().toUpperCase();
+
   if (!CodiceFiscale.check(code)) {
     return { hasError: true, error: `Codice fiscale errato, colonna ${column}: "${code}"` };
   }
+
+  data.setCell(row, column, code);
 
   return { hasError: false };
 }
@@ -144,6 +166,9 @@ export function CheckDate(data: CSVmanager, row: number, column: number): RowErr
 
 export function CheckImporto(data: CSVmanager, row: number, column: number): RowError {
   var importo = data.getCell(row, column);
+
+  importo = importo.replace(",", "");
+  importo = importo.replace("\"", "");
 
   // should be a number
   if (isNaN(parseFloat(importo))) {

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { CheckAndFix, CheckColumnAmount, CheckDate, CheckFiscaleCode, CheckImporto, CheckRows, CheckTipoProprietario, LogErrors, LogType, type Log } from "./functions";
+  import { CheckAndFix, CheckColumnAmount, CheckDate, CheckFiscaleCode, CheckImporto, CheckRows, CheckTipoProprietario, columnPositions, LogErrors, LogType, type Log } from "./functions";
   import { CSVmanager, saveToFile, xlsxFile2csv } from "$lib/xlsx";
   import { replaceState } from "$app/navigation";
 
@@ -32,22 +32,22 @@
       return;
     }
 
-    var err = CheckAndFix(csv_data, 0, CheckFiscaleCode);
+    var err = CheckAndFix(csv_data, columnPositions.codiceFiscaleProprietario, CheckFiscaleCode);
     logs.push(...LogErrors(err));
 
-    var err = CheckAndFix(csv_data, 1, CheckTipoProprietario);
+    var err = CheckAndFix(csv_data, columnPositions.tipoProprietario, CheckTipoProprietario);
     logs.push(...LogErrors(err));
 
-    var err = CheckAndFix(csv_data, 2, CheckFiscaleCode);
+    var err = CheckAndFix(csv_data, columnPositions.codiceFiscaleAssistito, CheckFiscaleCode);
     logs.push(...LogErrors(err));
 
-    var err = CheckAndFix(csv_data, 3, CheckDate);
+    var err = CheckAndFix(csv_data, columnPositions.dataDocumento, CheckDate);
     logs.push(...LogErrors(err));
     
-    var err = CheckAndFix(csv_data, 6, CheckDate);
+    var err = CheckAndFix(csv_data, columnPositions.dataPagamento, CheckDate);
     logs.push(...LogErrors(err));
 
-    var err = CheckAndFix(csv_data, 9, CheckImporto);
+    var err = CheckAndFix(csv_data, columnPositions.importo, CheckImporto);
     logs.push(...LogErrors(err));
 
     logs = [ ...logs, ]
