@@ -170,6 +170,8 @@ export function CheckImporto(data: CSVmanager, row: number, column: number): Row
   importo = importo.replace(",", "");
   importo = importo.replace("\"", "");
 
+  console.log(importo);
+
   // should be a number
   if (isNaN(parseFloat(importo))) {
     return { hasError: true, error: `Importo invalido, col ${column}: "${importo}"` };
