@@ -141,25 +141,42 @@ export function CheckDate(data: CSVmanager, row: number, column: number): RowErr
   var datestr = data.getCell(row, column);
 
   // if column is a date in GGMMAAAA format, do nothing
-  if (datestr.match(/^\d{8}$/)) { return { hasError: false } }
+  if (datestr.match(/^\d{8}$/)) {
+    return { hasError: false }
+  }
 
+  // if data is in the format DMMYYYY, convert it to GGMMAAAA
   if (datestr.match(/^\d{7}$/)) {
     data.setCell(row, column, datestr.padStart(8, "0"));
 
     return { hasError: false };
   }
 
-  var date = new Date(datestr);
+  // if data is in the format D/M/Y
+  let date = datestr.split("/");
 
-  if (isNaN(date.getTime())) {
-    return { hasError: true, error: `data invalida, col ${column}: "${datestr}"` };
+  if (date.length !== 3) {
+    return { hasError: true, error: `Data invalida, col ${column}: "${datestr}"` };
   }
 
-  var day = `${date.getDate()}`.padStart(2, "0");
-  var month = `${date.getMonth() + 1}`.padStart(2, "0");
-  var year = `${date.getFullYear()}`.padStart(4, "0");
+  let day = date[0];
+  let month = date[1];
+  let year = date[2];
 
-  data.setCell(row, column, `${day}${month}${year}`);
+  if (day.length === 1) {
+    day = "0" + day;
+  }
+
+  if (month.length === 1) {
+    month = "0" + month;
+  }
+
+  if (year.length === 2) {
+    let currentYear = new Date().getFullYear().toString().slice(2, 4);
+    year = (parseInt(year) > parseInt(currentYear) ? "19" : "20") + year;
+  }
+
+  data.setCell(row, column, day + month + year);
 
   return { hasError: false };
 }
@@ -167,10 +184,14 @@ export function CheckDate(data: CSVmanager, row: number, column: number): RowErr
 export function CheckImporto(data: CSVmanager, row: number, column: number): RowError {
   var importo = data.getCell(row, column);
 
-  importo = importo.replace(",", "");
-  importo = importo.replace("\"", "");
-
   console.log(importo);
+  
+  // regex to match this format: "1.000,00"
+  if (!importo.match(/((((\d{1,3}\.)*000,)|(\d{1,3},))\d{2})/)) {
+    return { hasError: true, error: `Importo invalido, col ${column}: "${importo}"` };
+  }
+
+  importo = importo.replaceAll("\"", "");
 
   // should be a number
   if (isNaN(parseFloat(importo))) {
@@ -178,6 +199,7 @@ export function CheckImporto(data: CSVmanager, row: number, column: number): Row
   }
 
   var fixedImporto = parseFloat(importo).toFixed(2);
+
   data.setCell(row, column, fixedImporto);
 
   // convert to a float with 2 decimals
