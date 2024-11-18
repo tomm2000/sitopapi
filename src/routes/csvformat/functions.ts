@@ -187,7 +187,10 @@ export function CheckImporto(data: CSVmanager, row: number, column: number): Row
   console.log(importo);
   
   // regex to match this format: "1.000,00"
-  if (!importo.match(/((((\d{1,3}\.)*000,)|(\d{1,3},))\d{2})/)) {
+  if (
+    !importo.match(/((((\d{1,3}\.)*000,)|(\d{1,3},))\d{2})/) &&
+    !importo.match(/\d+.\d\d/) 
+  ) {
     return { hasError: true, error: `Importo invalido, col ${column}: "${importo}"` };
   }
 
