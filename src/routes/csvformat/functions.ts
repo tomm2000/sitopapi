@@ -99,7 +99,7 @@ export function LogErrors(errors: RowError[]): Log[] {
 }
 
 export function CheckColumnAmount(data: CSVmanager, row: number): RowError {
-  if (data.getNColumns() !== 15) {
+  if (data.getNColumns() < 14) {
     return { hasError: true, error: `Numero invalido di colonne: ${data.getNColumns()}` };
   }
   return { hasError: false };
