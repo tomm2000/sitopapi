@@ -99,7 +99,7 @@ export function LogErrors(errors: RowError[]): Log[] {
 }
 
 export function CheckColumnAmount(data: CSVmanager, row: number): RowError {
-  if (data.getNColumns() < 14) {
+  if (data.getNColumns() !== 15) {
     return { hasError: true, error: `Numero invalido di colonne: ${data.getNColumns()}` };
   }
   return { hasError: false };
@@ -138,53 +138,58 @@ export function CheckTipoProprietario(data: CSVmanager, row: number, column: num
 }
 
 export function CheckDate(data: CSVmanager, row: number, column: number): RowError {
-  var datestr = data.getCell(row, column);
+  var cell_str = data.getCell(row, column);
 
-  // if column is a date in GGMMAAAA format, do nothing
-  if (datestr.match(/^\d{8}$/)) {
-    return { hasError: false }
+  if (cell_str === "") {
+    return { hasError: true, error: `Data mancante, col ${column}: "${cell_str}"` };
   }
 
-  // if data is in the format DMMYYYY, convert it to GGMMAAAA
-  if (datestr.match(/^\d{7}$/)) {
-    data.setCell(row, column, datestr.padStart(8, "0"));
+    // if the date is in the format "dd/mm/YYYY" or "d/m/YYYY" or ... we need to convert it to "YYYY-mm-dd"
+  if (cell_str.match(/\d{1,2}\/\d{1,2}\/\d{2,4}/)) {
+    let date_split = cell_str.split("/");
+    let day = date_split[0].padStart(2, "0");
+    let month = date_split[1].padStart(2, "0");
+    let year = date_split[2];
 
-    return { hasError: false };
+    cell_str = `${day}-${month}-${year}`;
+
+
+    // if the date is in the format "ddmmYYYY" we need to convert it to "YYYY-mm-dd"
+  } else if (cell_str.match(/\d{8}/)) {
+    let day = cell_str.slice(0, 2);
+    let month = cell_str.slice(2, 4);
+    let year = cell_str.slice(4, 8);
+
+    cell_str = `${year}-${month}-${day}`;
+
+
+    // if the date is in the format "YYYY-mm-dd" we don't need to do anything
+  } else if (cell_str.match(/\d{4}-\d{2}-\d{2}/)) {
+
+    // else the date is invalid
+  } else {
+    return { hasError: true, error: `Formato data invalida, col ${column}: "${cell_str}"` };
   }
 
-  // if data is in the format D/M/Y
-  let date = datestr.split("/");
+  var date = new Date(cell_str);
 
-  if (date.length !== 3) {
-    return { hasError: true, error: `Data invalida, col ${column}: "${datestr}"` };
+  if (isNaN(date.getTime())) {
+    return { hasError: true, error: `Errore lettura data, col ${column}: "${cell_str}"` };
   }
 
-  let day = date[0];
-  let month = date[1];
-  let year = date[2];
+  let day = date.getDate().toString().padStart(2, "0");
+  let month = (date.getMonth() + 1).toString().padStart(2, "0");
+  let year = date.getFullYear().toString();
 
-  if (day.length === 1) {
-    day = "0" + day;
-  }
+  let datestr = `${day}${month}${year}`;
 
-  if (month.length === 1) {
-    month = "0" + month;
-  }
-
-  if (year.length === 2) {
-    let currentYear = new Date().getFullYear().toString().slice(2, 4);
-    year = (parseInt(year) > parseInt(currentYear) ? "19" : "20") + year;
-  }
-
-  data.setCell(row, column, day + month + year);
+  data.setCell(row, column, datestr);
 
   return { hasError: false };
 }
 
 export function CheckImporto(data: CSVmanager, row: number, column: number): RowError {
   var importo = data.getCell(row, column);
-
-  console.log(importo);
   
   // regex to match this format: "1.000,00"
   if (

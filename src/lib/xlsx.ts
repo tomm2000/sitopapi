@@ -9,6 +9,7 @@ export async function xlsxFile2csv(file: File): Promise<string> {
 
 export async function xlsxData2csv(data: ArrayBuffer): Promise<string> {
   var workbook = XLSX.read(data, {type: 'array'});
+
   return XLSX.utils.sheet_to_csv(workbook.Sheets[workbook.SheetNames[0]], {
     FS: ';',
     RS: '\n',
